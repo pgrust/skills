@@ -1,6 +1,9 @@
 ---
 name: pgrust-workload
 description: Builds one local folder outside the repo (~/pgrust-workload/<repo>-<date>/) describing a Postgres or MySQL app's database workload (schema, the queries that matter, table sizes, version, extensions) so the user can review it and send it to pgrust for a benchmark on fake data. Use when the user asks to prepare, export or share their schema, slow queries or workload for pgrust, or invokes this skill. Reads the codebase first; touches a database only with one fixed read-only SQL file after the user approves; never sends anything.
+license: MIT
+metadata:
+  version: "1.0.0"
 ---
 
 # pgrust workload export
@@ -13,7 +16,7 @@ description: Builds one local folder outside the repo (~/pgrust-workload/<repo>-
 
 1. **Code only.** The agent reads your repo: migrations, ORM models, query code. No database access.
 2. **Your dashboard.** You open your host's query-performance page and export it. The agent tells you exactly where to click. The agent still has no database access.
-3. **Read-only SQL.** The agent runs one fixed file, [`scripts/collect.sql`](scripts/collect.sql). It reads Postgres's catalog and statistics, never your table rows. It runs inside a read-only transaction with a 30-second timeout and ends with a rollback. The agent shows you the exact command and waits for your yes.
+3. **Read-only SQL.** The agent runs one fixed file, [`scripts/collect.sql`](scripts/collect.sql). It reads Postgres's catalog and statistics, never your table rows. It runs inside a read-only transaction with a 30-second limit per statement and ends with a rollback. The agent shows you the exact command and waits for your yes.
 
 **What it never does.**
 
@@ -24,7 +27,7 @@ description: Builds one local folder outside the repo (~/pgrust-workload/<repo>-
 
 **What leaves your machine.** Nothing, until you send the folder yourself. As in any coding-agent session, your agent's model provider sees what the agent reads. Before you send it, the agent scans the folder for secrets and personal data and lists anything it couldn't decide on. Then you skim the folder, which takes about 5 to 10 minutes.
 
-**What's in this skill.** This file. `references/` holds three detail files for the agent, covering ORM extraction, dashboard steps and the read-only SQL. `scripts/collect.sql` is the only SQL it will run. `scripts/scan_bundle.py` and `scripts/normalize_sql.py` are local text checks: standard-library Python, no network.
+**What's in this skill.** This file. `references/` holds three detail files for the agent, covering ORM extraction, dashboard steps and the read-only SQL. `scripts/collect.sql` is the only SQL it will run. `scripts/scan_bundle.py` and `scripts/normalize_sql.py` are local text tools: standard-library Python, no network.
 
 ---
 
@@ -85,7 +88,7 @@ description: Builds one local folder outside the repo (~/pgrust-workload/<repo>-
    - If the user named a different folder, use theirs, unless it's inside the repo. In that case, say why it must be outside and ask again.
    - Create it by writing your first file (`<bundle>/schema.sql`) with your file-writing tool, or with `mkdir -p <bundle>`.
 
-   **If writing outside the repo is blocked.** Codex, Cursor and Claude Code may ask the user once to allow writing outside the workspace. Say this plainly before your first write, in one line, for example: "I'll write the bundle to `/Users/you/pgrust-workload/acme-invoices-20261015/`, outside your repo. Your agent may ask you once to allow that."
+   **If writing outside the repo is blocked.** Codex, Cursor and Claude Code may ask the user once to allow writing outside the workspace. Say this plainly before your first write, in one line, for example: "I'll write the bundle to `/Users/you/pgrust-workload/myapp-20261015/`, outside your repo. Your agent may ask you once to allow that."
 
    If the write is denied or the sandbox blocks it, don't retry elsewhere and don't write inside the repo. Print the exact path and ask the user to choose one of these:
    - approve the write;
