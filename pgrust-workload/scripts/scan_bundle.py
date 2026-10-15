@@ -2,9 +2,9 @@
 """Scan a pgrust-workload folder for secrets and personal data before a human sends it.
 
 Usage:
-  python3 scan_bundle.py pgrust-workload            # report only; exit 1 if anything must be fixed
-  python3 scan_bundle.py pgrust-workload --redact   # replace must-fix matches in place, then report
-  python3 scan_bundle.py pgrust-workload --term "Acme Corp" --term Northwind   # extra words to catch
+  python3 scan_bundle.py ~/pgrust-workload/<repo>-<date>            # report only; exit 1 if anything must be fixed
+  python3 scan_bundle.py ~/pgrust-workload/<repo>-<date> --redact   # replace must-fix matches in place, then report
+  python3 scan_bundle.py ~/pgrust-workload/<repo>-<date> --term "Acme Corp"   # extra words to catch
 
 Matches are printed masked (first 3 characters, then ***), so running this does not copy
 the secret into the agent's context. Standard library only; reads and writes nothing

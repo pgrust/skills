@@ -1,6 +1,6 @@
 # pgrust-workload: an agent skill
 
-This skill helps your coding agent describe your database workload for pgrust. It writes one folder, `pgrust-workload/`, for you to review and send yourself.
+This skill helps your coding agent describe your database workload for pgrust. It writes one folder outside your repo, `~/pgrust-workload/<repo>-<date>/`, for you to review and send yourself.
 
 The first section of [`pgrust-workload/SKILL.md`](pgrust-workload/SKILL.md) explains in one minute what it does, what it never does, and what leaves your machine. Please read it before you install the skill.
 
@@ -29,7 +29,7 @@ From your app's repo, ask your agent:
 
 > use the pgrust-workload skill
 
-The agent reads your code first and asks before doing anything more. When it finishes, review `pgrust-workload/SUMMARY.md`, then zip the folder and send it to your pgrust contact.
+The agent reads your code first and asks before doing anything more. When it finishes, review `SUMMARY.md` in that folder, then zip the folder and send it to your pgrust contact.
 
 ## Requirements
 

@@ -60,7 +60,7 @@ Don't add `PGOPTIONS` or `options=`. PgBouncer and RDS Proxy reject them, and th
 |---|---|---|
 | `psql: command not found` | psql isn't installed | Don't install it. Offer Level 2, or let the user run the command where psql exists, such as a bastion or a container. |
 | `connection refused`, `timeout`, `password authentication failed` | wrong or unreachable connection | Report it and stop. Don't try other hosts, ports or logins. |
-| `STOP: the transaction is not read-only` | something overrode the read-only setting | Delete `pgrust-workload/db/` and report it. Don't retry. |
+| `STOP: the transaction is not read-only` | something overrode the read-only setting | Delete `<bundle>/db/` (or ask the user to) and report it. Don't retry. |
 | `ERROR: canceling statement due to lock timeout` | a migration or maintenance job held a table lock | Those files are empty. Nothing waited more than 2 s. Offer one rerun later. |
 | `ERROR: canceling statement due to statement timeout` | a huge catalog (thousands of tables or schemas) | Report it. The other files are still useful. |
 | `11_top_queries.csv` says not installed | `pg_stat_statements` isn't in this database | Never install or enable it. Fall back as below. |
@@ -91,21 +91,23 @@ Don't add `PGOPTIONS` or `options=`. PgBouncer and RDS Proxy reject them, and th
 
 ## If the user wants to run it themselves
 
-They can run the same command in their own terminal from the repo root:
+They can run the same command in their own terminal from anywhere. Give them the absolute bundle path:
 
 ```sh
-mkdir -p pgrust-workload/db && cd pgrust-workload/db && psql "$THEIR_URL" -X -q -f <skill-dir>/scripts/collect.sql
+mkdir -p <bundle>/db && cd <bundle>/db && psql "$THEIR_URL" -X -q -f <skill-dir>/scripts/collect.sql
 ```
 
 Then you continue from Level 3 step 5 (Verify).
 
-## Optional: pg_dump of the schema (only if the user asks, and only on a replica or branch)
+## Optional: pg_dump of the schema (the user runs it, only on a replica or branch)
+
+You never run `pg_dump` yourself (SKILL.md, hard rule 2). If the user wants it, give them this command and its caveats, then read the file it writes.
 
 `pg_dump --schema-only --no-owner --no-privileges --no-subscriptions --no-comments --no-security-labels --lock-wait-timeout=5s`
 
 Caveats:
 
-- It holds a shared lock on every table until it finishes. On a primary, a migration that starts meanwhile waits, and app queries queue behind that migration.
+- It takes an explicit shared lock (`LOCK TABLE ... IN ACCESS SHARE MODE`) on every table and holds it until it finishes. On a primary, a migration that starts meanwhile waits, and app queries queue behind that migration.
 - It disables its own timeouts.
 - Its output can contain foreign-data-wrapper passwords and webhook tokens inside trigger definitions, so the Step 5 scan is mandatory.
 - Never add `--statistics` or `--statistics-only`. These contain real values.
@@ -115,7 +117,7 @@ Caveats:
 If `python3` isn't available, scan with grep. The command prints only file:line, never the match, so a secret doesn't land in your context. Open each listed line and fix it:
 
 ```sh
-grep -rnE '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}|eyJ[A-Za-z0-9_-]{8,}|[Bb]earer [A-Za-z0-9._~+/=-]{8,}|(sk|rk|pk)_(live|test)_[A-Za-z0-9]{8,}|AKIA[A-Z0-9]{12,}|gh[pousr]_[A-Za-z0-9]{20,}|xox[abposr]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY|://[^ :/@]+:[^ @/]+@|[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd] *[:=]' pgrust-workload | cut -d: -f1-2
+grep -rnE '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}|eyJ[A-Za-z0-9_-]{8,}|[Bb]earer [A-Za-z0-9._~+/=-]{8,}|(sk|rk|pk)_(live|test)_[A-Za-z0-9]{8,}|AKIA[A-Z0-9]{12,}|gh[pousr]_[A-Za-z0-9]{20,}|xox[abposr]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY|://[^ :/@]+:[^ @/]+@|[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd] *[:=]' <bundle> | cut -d: -f1-2
 ```
 
 Fix each hit by editing the file to replace the value with `<redacted>`. Then rerun until the command prints nothing.

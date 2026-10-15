@@ -18,8 +18,8 @@
 -- (the same lock a SELECT takes); if a table is locked by a migration, that statement
 -- gives up after 2s and the script carries on.
 --
--- Run it from inside the output folder, so the files land there:
---   cd pgrust-workload/db && psql "$PGRUST_DB_URL" -X -q -f <path-to>/collect.sql
+-- Run it from inside the output folder (the bundle folder outside the repo), so the files land there:
+--   mkdir -p ~/pgrust-workload/<repo>-<YYYYMMDD>/db && cd ~/pgrust-workload/<repo>-<YYYYMMDD>/db && psql "$PGRUST_DB_URL" -X -q -f <path-to>/collect.sql
 -- Output: 00_session.csv ... 13_pgss_info.csv, plus schema_from_db.sql.
 
 \set ON_ERROR_STOP off
@@ -91,7 +91,7 @@ SELECT pg_database_size(current_database()) AS database_bytes,
          WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
            AND n.nspname NOT LIKE 'pg\_toast%' AND n.nspname NOT LIKE 'pg\_temp%') AS schemas;
 
--- 05: tables: estimated rows and sizes from the catalog (no table scans, no table locks),
+-- 05: tables: estimated rows and sizes from the catalog (no table scans; no explicit locks, it reads pg_class only),
 --     plus activity counters that show which tables are hot. Largest 500.
 \o 05_tables.csv
 SELECT n.nspname AS schema, c.relname AS table_name, c.relkind, c.relispartition AS is_partition,

@@ -77,4 +77,4 @@ For each query, give your evidence for frequency ("called from middleware on eve
 ## Monorepos and several databases
 
 - List each database the code talks to, and ask the user which one matters most. This is one of the few good questions.
-- Make one bundle per database only if they ask: `pgrust-workload/<db-name>/`.
+- Make one bundle per database only if they ask: `<bundle>/<db-name>/`.

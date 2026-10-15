@@ -1,6 +1,8 @@
 # Level 2: dashboard exports, by host
 
-Give the user only the section for their host. Ask for a downloaded file path where an export exists. A screenshot works where it doesn't: save it under `pgrust-workload/dashboard/` and transcribe the query text and numbers into `queries.sql`.
+Every CLI command in this file is for the **user** to run in their own terminal. You never run them yourself, because your only database command is `collect.sql` (SKILL.md, hard rule 2). Read the files they produce.
+
+Give the user only the section for their host. Ask for a downloaded file path where an export exists. A screenshot works where it doesn't: save it under `<bundle>/dashboard/` (the bundle folder outside the repo; see SKILL.md Step 0) and transcribe the query text and numbers into `queries.sql`.
 
 Status labels:
 
@@ -31,13 +33,13 @@ The Performance Advisor lists issues such as unindexed foreign keys, unused inde
 **CLI alternative.** This is read-only and runs on the user's machine, logged in to their own account (VERIFIED, Supabase CLI reference):
 
 ```sh
-supabase inspect report --linked --output-dir pgrust-workload/dashboard/supabase-inspect
+supabase inspect report --linked --output-dir <bundle>/dashboard/supabase-inspect
 supabase db advisors --linked --type performance
 ```
 
-`inspect report` writes one CSV per check into a dated subfolder: outliers, calls, table stats, index stats, bloat and so on. The user runs these, or approves you running them. They use the user's own Supabase login, so the agent never sees a database password.
+`inspect report` writes one CSV per check into a dated subfolder: outliers, calls, table stats, index stats, bloat and so on. The user runs these, not you. They use the user's own Supabase login, so the agent never sees a database password.
 
-**Schema, if the migrations aren't complete.** `supabase db dump --linked -f pgrust-workload/dashboard/schema_dump.sql` is schema-only by default and excludes Supabase-managed schemas (VERIFIED). It holds table locks on the primary while it runs, so suggest it only for a quiet moment or a branch. Database webhooks put service keys into trigger definitions, so the scan in Step 5 must run on this file.
+**Schema, if the migrations aren't complete.** `supabase db dump --linked -f <bundle>/dashboard/schema_dump.sql` is schema-only by default and excludes Supabase-managed schemas (VERIFIED). It holds table locks on the primary while it runs, so suggest it only for a quiet moment or a branch. Database webhooks put service keys into trigger definitions, so the scan in Step 5 must run on this file.
 
 ## PlanetScale Postgres
 
@@ -79,9 +81,9 @@ The history resets when the compute scales to zero or restarts. Do this after a 
 **CLI alternative** (VERIFIED, Neon CLI docs; read-only, uses the user's own Neon login):
 
 ```sh
-neon inspect db outliers > pgrust-workload/dashboard/neon-outliers.txt
-neon inspect db table-sizes > pgrust-workload/dashboard/neon-table-sizes.txt
-neon inspect db calls > pgrust-workload/dashboard/neon-calls.txt
+neon inspect db outliers > <bundle>/dashboard/neon-outliers.txt
+neon inspect db table-sizes > <bundle>/dashboard/neon-table-sizes.txt
+neon inspect db calls > <bundle>/dashboard/neon-calls.txt
 ```
 
 Each prints the top 25. Exact output-format flags are UNVERIFIED.
@@ -106,7 +108,7 @@ aws pi describe-dimension-keys --service-type RDS --identifier db-XXXX \
   --start-time <iso> --end-time <iso> --max-results 25
 ```
 
-The agent must not run AWS commands itself unless the user asks, and must never read `~/.aws`.
+The agent must not run AWS commands itself, and must never read `~/.aws`.
 
 The Standard and Advanced modes differ in retention and plan capture. Which one is the default is contradictory in AWS's own docs (UNVERIFIED), and either is fine for this.
 
@@ -136,7 +138,7 @@ The Diagnose tab isn't available on Essential or Shield plans.
 **CLI:**
 
 ```sh
-heroku pg:outliers -n 25 > pgrust-workload/dashboard/heroku-outliers.txt
+heroku pg:outliers -n 25 > <bundle>/dashboard/heroku-outliers.txt
 ```
 
 This needs the pg-extras plugin. Never add `--reset`.
