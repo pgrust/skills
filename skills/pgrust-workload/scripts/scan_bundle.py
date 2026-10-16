@@ -49,6 +49,9 @@ REVIEW = [
     ("compared-long-number", re.compile(r"(?:=|\bin\s*\()\s*\d{7,}\b", re.I)),
 ]
 
+# pgrust's own public contact address appears in SUMMARY.md on purpose; never flag or redact it.
+ALLOWED_VALUES = {"maintainers@pgrust.com"}
+
 SKIP_DIRS = {".git", "node_modules", "__pycache__"}
 MAX_BYTES = 20 * 1024 * 1024
 
@@ -63,7 +66,8 @@ def scan_text(text, extra):
     for lineno, line in enumerate(text.splitlines(), 1):
         for kind, rx in MUST_FIX + extra:
             for m in rx.finditer(line):
-                findings.append(("must-fix", kind, lineno, m.group(0)))
+                if m.group(0).lower() not in ALLOWED_VALUES:
+                    findings.append(("must-fix", kind, lineno, m.group(0)))
         for kind, rx in REVIEW:
             for m in rx.finditer(line):
                 findings.append(("review", kind, lineno, m.group(0)))
@@ -73,8 +77,15 @@ def scan_text(text, extra):
 def redact_text(text, extra):
     count = 0
     for kind, rx in MUST_FIX + extra:
-        text, n = rx.subn("<redacted:%s>" % kind, text)
-        count += n
+        hits = [0]
+
+        def sub(m, kind=kind):
+            if m.group(0).lower() in ALLOWED_VALUES:
+                return m.group(0)
+            hits[0] += 1
+            return "<redacted:%s>" % kind
+        text = rx.sub(sub, text)
+        count += hits[0]
     return text, count
 
 

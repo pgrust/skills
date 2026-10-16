@@ -109,7 +109,7 @@ Caveats:
 
 - It takes an explicit shared lock (`LOCK TABLE ... IN ACCESS SHARE MODE`) on every table and holds it until it finishes. On a primary, a migration that starts meanwhile waits, and app queries queue behind that migration.
 - It disables its own timeouts.
-- Its output can contain foreign-data-wrapper passwords and webhook tokens inside trigger definitions, so the Step 5 scan is mandatory.
+- Its output can contain foreign-data-wrapper passwords and webhook tokens inside trigger definitions, so the final scan (SKILL.md Step 6) is mandatory.
 - Never add `--statistics` or `--statistics-only`. These contain real values.
 
 ## No Python

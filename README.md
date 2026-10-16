@@ -47,7 +47,7 @@ Open your app's repo in your agent and say:
 
 > use the pgrust-workload skill
 
-The agent reads your code first, then offers the dashboard and SQL options. Add "code only" to skip them. When it finishes, read `SUMMARY.md` in the folder it names, then zip the folder and send it to your pgrust contact.
+The agent reads your code first, then offers the dashboard and SQL options. Add "code only" to skip them. When it finishes, read `SUMMARY.md` in the folder it names, then zip the folder and send it to your pgrust contact, or email maintainers@pgrust.com.
 
 ## Requirements
 

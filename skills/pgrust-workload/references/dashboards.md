@@ -39,7 +39,7 @@ supabase db advisors --linked --type performance
 
 `inspect report` writes one CSV per check into a dated subfolder: outliers, calls, table stats, index stats, bloat and so on. The user runs these, not you. They use the user's own Supabase login, so the agent never sees a database password.
 
-**Schema, if the migrations aren't complete.** `supabase db dump --linked -f <bundle>/dashboard/schema_dump.sql` is schema-only by default and excludes Supabase-managed schemas (VERIFIED). It holds table locks on the primary while it runs, so suggest it only for a quiet moment or a branch. Database webhooks put service keys into trigger definitions, so the scan in Step 5 must run on this file.
+**Schema, if the migrations aren't complete.** `supabase db dump --linked -f <bundle>/dashboard/schema_dump.sql` is schema-only by default and excludes Supabase-managed schemas (VERIFIED). It takes explicit shared table locks on the primary while it runs, so suggest it only for a quiet moment or a branch. Database webhooks put service keys into trigger definitions, so the final scan (SKILL.md Step 6) must run on this file.
 
 ## PlanetScale Postgres
 

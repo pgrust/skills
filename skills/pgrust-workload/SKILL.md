@@ -170,28 +170,14 @@ Read [references/live-sql.md](references/live-sql.md) first. Then:
    - If `11_top_queries.csv` says pg_stat_statements is missing, or `12_pgss_visibility.csv` shows most statements hidden, tell the user and use the fallbacks in live-sql.md. Never install or enable anything.
 6. **Merge.** Add the top queries from `11_top_queries.csv` to `queries.sql`, marked `source: pg_stat_statements (measured)`, with calls and mean ms, and linked to the code that sends them where you can tell. Fill `tables.csv` from `05_tables.csv`.
 
-### Step 5: Redact and scan (mandatory, even if you think nothing sensitive is in the folder)
+### Step 5: Write SUMMARY.md
 
-Run this one command, with literal absolute paths for both the script and the bundle:
-
-```sh
-python3 /absolute/path/to/<skill-dir>/scripts/scan_bundle.py /absolute/path/to/<bundle> --redact
-```
-
-- **Must-fix.** The command replaces must-fix matches in place: emails, keys, tokens, JWTs, passwords, connection strings and phone numbers. It then reports what remains, which must be `must-fix remaining: 0`. If anything remains, fix it by hand and run the command again.
-- **Review items.** Look at each review item (IP addresses, cloud hostnames, UUIDs, long random strings, long numbers) and fix it if it's real data.
-- **Extra terms.** If the user named their company or customers, add `--term "Name"` to the command.
-- **No Python.** Use the grep fallback in [references/live-sql.md](references/live-sql.md#no-python).
-- **Denied or failed.** If the scan command is denied or fails, tell the user, and ask them to approve it or to run it themselves (give the exact command). Until a scan has passed, SUMMARY.md must say "NOT SCANNED", and you must not call the bundle ready.
-
-### Step 6: Write SUMMARY.md and hand off
-
-Write `<bundle>/SUMMARY.md` from this template. Keep it to about a page. It must not contain hostnames, database names, usernames or connection details.
+Write `<bundle>/SUMMARY.md` from this template. Keep it to about a page. It must not contain hostnames, database names, usernames or connection details. Leave the scan section as "NOT SCANNED YET"; Step 6 fills it in.
 
 ```markdown
 # Workload bundle for pgrust (<date>)
 
-Nothing in this folder has been sent anywhere. Review it, then zip the folder and send it to your pgrust contact.
+Nothing in this folder has been sent anywhere. Review it, then zip the folder and send it to your pgrust contact, or email maintainers@pgrust.com.
 
 ## How it was collected
 - Levels: 1 code [+ 2 <host> dashboard export] [+ 3 read-only SQL, transaction_read_only=on]
@@ -210,13 +196,32 @@ Nothing in this folder has been sent anywhere. Review it, then zip the folder an
 - ...
 
 ## Secret and personal-data scan
-- Auto-redacted: N (by kind). Must-fix remaining: 0. Reviewed by the agent: ...
+- NOT SCANNED YET (Step 6 replaces this line with: auto-redacted N by kind, must-fix remaining 0, review items checked, and that the scan covered this file)
 
 ## Before you send (5–10 minutes)
 - [ ] Skim queries.sql: every value should be $1, $2 ...
 - [ ] Table, schema and column names: do any name a customer or a secret project?
 - [ ] dashboard/ and db/ files: anything you'd rather not share? Delete it; the rest still works.
 ```
+
+### Step 6: Final scan, then hand off (mandatory, even if you think nothing sensitive is in the folder)
+
+The scan must cover the finished bundle, SUMMARY.md included. It is always the last thing that touches the bundle.
+
+1. Run this command, with literal absolute paths for both the script and the bundle:
+
+   ```sh
+   python3 /absolute/path/to/<skill-dir>/scripts/scan_bundle.py /absolute/path/to/<bundle> --redact
+   ```
+
+   - **Must-fix.** It replaces must-fix matches in place (emails, keys, tokens, JWTs, passwords, connection strings, phone numbers) in every file, SUMMARY.md included. It then reports what remains. If anything remains, fix it by hand.
+   - **Review items.** Look at each review item (IP addresses, cloud hostnames, UUIDs, long random strings, long numbers) and fix it if it's real data.
+   - **Extra terms.** If the user named their company or customers, add `--term "Name"`.
+   - **No Python.** Use the grep fallback in [references/live-sql.md](references/live-sql.md#no-python).
+2. Replace the "NOT SCANNED YET" line in SUMMARY.md with the result: auto-redacted N (by kind), the review items you checked, and "this scan covered SUMMARY.md".
+3. Run the same command once more. This final run must report `must-fix remaining: 0`.
+   - If you change any file in the bundle after it, SUMMARY.md included, run it again. A bundle is ready only when its last change came before a passing scan.
+4. **Denied or failed.** If a scan command is denied or fails, tell the user, ask them to approve it or run it themselves (give the exact command), and leave SUMMARY.md saying "NOT SCANNED YET". Don't call the bundle ready.
 
 Then tell the user four things:
 
