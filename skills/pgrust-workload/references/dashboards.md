@@ -154,9 +154,40 @@ It needs Query Store switched on (`pg_qs.query_capture_mode` = `top`), which is 
 
 Azure's stored query text keeps the **literal values of the first execution**. If the user exports text from `query_store.query_texts_view`, run it through `normalize_sql.py` before it goes into the bundle, and say so in SUMMARY.md.
 
+## ClickHouse Cloud
+
+**Query insights** (VERIFIED, ClickHouse docs, 2026-10-21):
+
+1. Open the service, then **Monitoring** in the left sidebar, then **Query insights**.
+2. Set the time range to a busy day or week.
+3. The **Recent queries** table groups the query log by normalized query hash and user. Sort it by total time, then by count, and show the p90/p99 and tables columns. Exact column names are UNVERIFIED.
+
+There is no export on that page (UNVERIFIED that none exists; none is documented). Ask for a screenshot of the top 20 rows, or use the SQL console below.
+
+**SQL console export** (VERIFIED, ClickHouse docs, 2026-10-21: the ••• menu on the result pane has **Download as CSV**; the query was tested on self-hosted ClickHouse 26.8, not in the Cloud console). The user pastes this read-only query into the service's **SQL console**, runs it, then downloads the result. It covers all replicas, last 24 hours:
+
+```sql
+SELECT normalized_query_hash, query_kind, count() AS calls,
+       sum(query_duration_ms) AS total_ms, round(avg(query_duration_ms), 1) AS mean_ms,
+       round(quantile(0.95)(query_duration_ms), 1) AS p95_ms,
+       sum(read_rows) AS total_read_rows, sum(read_bytes) AS total_read_bytes,
+       max(memory_usage) AS max_memory_bytes,
+       normalizeQuery(any(query)) AS normalized_query
+FROM clusterAllReplicas(default, system.query_log)
+WHERE event_date >= yesterday() AND event_time >= now() - INTERVAL 1 DAY
+  AND type = 'QueryFinish' AND is_initial_query AND query_kind IN ('Select', 'Insert')
+  AND NOT has(databases, 'system')
+GROUP BY normalized_query_hash, query_kind
+ORDER BY total_ms DESC
+LIMIT 100
+```
+
+`normalizeQuery()` replaces every literal with `?`. On a very busy service, keep the 1-day window. If the user can connect with `clickhouse client`, Level 3 collects this and more in one run.
+
 ## Self-hosted, Crunchy Bridge, Tiger Cloud, Fly and others
 
 There's no dashboard step to give. Use Level 1, plus Level 3 if they're comfortable.
 
 - **Crunchy Bridge:** `cb scope` exists, but its outlier text is truncated.
 - **Tiger Cloud (Timescale):** **Insights** is under the service's monitoring (UNVERIFIED path). `pg_stat_statements` is on by default there.
+- **Self-hosted ClickHouse:** no console. Use Level 1, plus Level 3 with `collect_clickhouse.sql`.

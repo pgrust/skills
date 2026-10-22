@@ -74,7 +74,23 @@ For each query, give your evidence for frequency ("called from middleware on eve
 - Vitess: note sharded keyspaces and vindexes if `vschema.json` exists.
 - Level 3 (`collect.sql`) is Postgres-only, so for MySQL stop at Level 2 (PlanetScale Insights).
 
+## ClickHouse
+
+| Detect by | Schema source, best first | Notes |
+|---|---|---|
+| `@clickhouse/client` (Node), `clickhouse-connect` or `clickhouse-driver` (Python), `github.com/ClickHouse/clickhouse-go` (Go), `clickhouse-jdbc` (JVM), the `clickhouse` crate (Rust), `dbt-clickhouse`, `.sql` files with `ENGINE = ...MergeTree` | SQL migrations or `CREATE TABLE` files, then DDL strings in code | dbt models are SELECTs; the table engine and `ORDER BY` are in each model's `config()` or `dbt_project.yml`. |
+
+- Keep the ClickHouse dialect, and say "ClickHouse" at the top of schema.sql and queries.sql.
+- In schema.sql, keep what drives ClickHouse performance: `ENGINE`, `ORDER BY`, `PRIMARY KEY`, `PARTITION BY`, `SAMPLE BY`, `TTL`, column `CODEC`s, `LowCardinality` and `Nullable` types, skip indexes (`INDEX ... TYPE ... GRANULARITY`), projections, and `SETTINGS` such as `index_granularity`.
+- Keep materialized views with their `TO` target table, and `Distributed`, `Buffer` and `Dictionary` objects. They change where inserts land.
+- For tables whose engine connects elsewhere (`Kafka`, `RabbitMQ`, `S3`, `S3Queue`, `PostgreSQL`, `MySQL`, `URL`) and for dictionary `SOURCE(...)`, keep the columns and the engine name. Replace hosts, users, keys, passwords and real-looking topic names with `<redacted>`.
+- Drop `COMMENT` clauses, as for Postgres.
+- Queries: keep the placeholders the app uses, `{name:Type}` query parameters or `?`.
+- Inserts matter as much as reads. For each hot insert, note how often it runs, rows per insert, and whether it is a synchronous batch, `async_insert`, a `Buffer` table or a Kafka consumer.
+- Level 3 for ClickHouse is `collect_clickhouse.sql`. See [clickhouse.md](clickhouse.md).
+
 ## Monorepos and several databases
 
 - List each database the code talks to, and ask the user which one matters most. This is one of the few good questions.
 - Make one bundle per database only if they ask: `<bundle>/<db-name>/`.
+- If the app uses both a Postgres and a ClickHouse database, they can share one bundle: Level 3 writes Postgres output to `<bundle>/db/` and ClickHouse output to `<bundle>/clickhouse/`.

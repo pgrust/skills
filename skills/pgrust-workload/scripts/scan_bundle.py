@@ -41,7 +41,7 @@ REVIEW = [
     ("ip-address", re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")),
     ("cloud-hostname", re.compile(
         r"(?i)\b[a-z0-9.-]+\.(?:supabase\.co|supabase\.com|pooler\.supabase\.com|neon\.tech|psdb\.cloud|"
-        r"rds\.amazonaws\.com|amazonaws\.com|database\.azure\.com|herokuapp\.com|cloudsql|"
+        r"rds\.amazonaws\.com|amazonaws\.com|database\.azure\.com|herokuapp\.com|clickhouse\.cloud|cloudsql|"
         r"internal|corp|lan|intranet)\b")),
     ("uuid", re.compile(r"(?i)\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b")),
     ("long-random-string", re.compile(r"\b(?=[A-Za-z0-9+/_-]*\d)(?=[A-Za-z0-9+/_-]*[A-Za-z])[A-Za-z0-9+/_-]{32,}={0,2}")),

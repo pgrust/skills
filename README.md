@@ -4,9 +4,9 @@ Agent skills from [pgrust](https://pgrust.com). There is one so far: `pgrust-wor
 
 ## pgrust-workload
 
-Your coding agent writes down the shape of your app's database workload: the schema, the queries that matter, table sizes, Postgres version and extensions. pgrust generates fake data at your scale, runs your queries on stock Postgres and on pgrust, and sends you the timings.
+Your coding agent writes down the shape of your app's database workload: the schema, the queries that matter, table sizes, Postgres version and extensions. pgrust generates fake data at your scale, runs your queries on stock Postgres and on pgrust, and sends you the timings. It also covers ClickHouse: table engines, sort keys, top queries and how data arrives.
 
-- It starts by reading your code. Going further is your choice: export your host's query dashboard yourself, or let the agent run one read-only SQL file, [`collect.sql`](skills/pgrust-workload/scripts/collect.sql), after you approve the exact command.
+- It starts by reading your code. Going further is your choice: export your host's query dashboard yourself, or let the agent run one read-only SQL file, [`collect.sql`](skills/pgrust-workload/scripts/collect.sql) for Postgres or [`collect_clickhouse.sql`](skills/pgrust-workload/scripts/collect_clickhouse.sql) for ClickHouse, after you approve the exact command.
 - It never reads table rows or `.env` files, never writes to your database, and never sends anything. As in any agent session, your model provider sees what the agent reads.
 - It writes one folder outside your repo, `~/pgrust-workload/<repo>-<date>/`. You review the folder and send it yourself.
 
@@ -53,6 +53,7 @@ The agent reads your code first, then offers the dashboard and SQL options. Add 
 
 - `python3` for the local secret scan. Without it, the agent falls back to `grep`.
 - `psql` 12 or newer, only for the read-only SQL option. Tested against Postgres 17 and 18.
+- For ClickHouse, `clickhouse client` (or `clickhouse-client`), only for the read-only SQL option. Tested against ClickHouse 24.8 and 26.8.
 
 ## Remove
 
