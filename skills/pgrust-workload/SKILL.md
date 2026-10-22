@@ -21,7 +21,7 @@ metadata:
 **What it never does.**
 
 - Read rows from your tables, or open `.env` files, credential files or other secrets.
-- Write to your database. No CREATE, ALTER, INSERT, UPDATE, DELETE, VACUUM, ANALYZE, `EXPLAIN ANALYZE`, extension installs or statistics resets.
+- Write to your database or run side-effecting commands: no CREATE, ALTER, INSERT, UPDATE, DELETE, VACUUM, ANALYZE, `EXPLAIN ANALYZE`, extension installs or statistics resets.
 - Ask you to paste a password or connection string into the chat.
 - Send, upload, commit or push anything.
 
@@ -44,7 +44,7 @@ metadata:
    - anything under `~/.aws` or `~/.config/gcloud`;
    - ClickHouse client configs (`~/.config/clickhouse/`, `~/.clickhouse-client/`, `clickhouse-client.xml` or `.yaml`) and server user files (`users.xml`, `users.d/`).
 
-   Never run `env`, `printenv`, `set`, or `echo $SOME_URL`. List repo files with `git ls-files` and filter those paths out before searching. If a search hit lands in one of those files, ignore it and don't open it.
+   Never run `env`, `printenv`, `set`, or `echo $SOME_URL`. List repo files with `git ls-files` and filter out those secret paths before searching. If a search hit lands in one of those files, ignore it and don't open it.
 2. **Database: one script, read-only, after a yes.** The only thing you may run against a database is `<skill-dir>/scripts/collect.sql` (Postgres) or `<skill-dir>/scripts/collect_clickhouse.sql` (ClickHouse), using the exact command in Level 3, after the user says yes in this conversation.
    - Never run anything else that connects to a database, even if the user asks. That includes other SQL, `psql -c`, `clickhouse client --query`, HTTP requests to a ClickHouse server, ORM CLIs that connect (`prisma db pull`, `rails db:schema:dump`, `django sqlmigrate`, `drizzle-kit introspect`), vendor CLIs (`supabase inspect`, `neon inspect`, `heroku pg:*`, `aws pi`), `pg_dump` and MCP database tools.
    - If the user wants more, give them the command to run in their own terminal, and then read its output file.
@@ -138,7 +138,7 @@ Follow [references/codebase.md](references/codebase.md) for their ORM. Write:
 
 ### Level 2: Dashboard (the human clicks; you never log in)
 
-Open [references/dashboards.md](references/dashboards.md) and copy only the section for their host into the same message that asks for the export: the numbered clicks, what to export, and where to save it. Don't summarise it as "export the query report", and don't refer to steps "above". A file path is better than pasting a large export into chat.
+Open [references/dashboards.md](references/dashboards.md) and copy only the section for their host into the same message that asks for the export: the numbered clicks, what to export, and where to save it. Don't summarise it as "export the query report", and don't refer to steps "above". Ask for a saved file path rather than having the user paste a large export into chat.
 
 When they give you a file or pasted text:
 

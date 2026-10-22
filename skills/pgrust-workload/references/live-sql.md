@@ -87,7 +87,7 @@ Don't add `PGOPTIONS` or `options=`. PgBouncer and RDS Proxy reject them, and th
 - No `pg_stat_activity`. Live query text has real values in it.
 - No function or trigger bodies, `pg_user_mappings`, roles or subscriptions. These can hold secrets.
 - No `EXPLAIN`.
-- No `pg_relation_size()` calls. Sizes come from catalog page counts (estimates), so no table is opened just to measure it. Building DDL text (`pg_get_indexdef`, `pg_get_viewdef`, `pg_get_expr`) briefly takes the same shared lock a SELECT takes, then releases it immediately (PostgreSQL source, `ruleutils.c`). A table locked by a migration makes that one statement give up after 2 s.
+- No `pg_relation_size()` calls. Table and index sizes come from catalog page counts (estimates), so no table file is opened just to measure it. Catalog functions that rebuild DDL text (`pg_get_indexdef`, `pg_get_viewdef`, `pg_get_expr`) briefly take the same shared lock a SELECT takes and release it immediately (PostgreSQL source, `ruleutils.c`). If a migration holds a conflicting lock on a table, that one statement gives up after 2 s.
 
 ## If the user wants to run it themselves
 
@@ -107,14 +107,14 @@ You never run `pg_dump` yourself (SKILL.md, hard rule 2). If the user wants it, 
 
 Caveats:
 
-- It takes an explicit shared lock (`LOCK TABLE ... IN ACCESS SHARE MODE`) on every table and holds it until it finishes. On a primary, a migration that starts meanwhile waits, and app queries queue behind that migration.
+- It takes an explicit shared lock (`LOCK TABLE ... IN ACCESS SHARE MODE`) on every table and holds all of them until the dump completes. On a primary, any migration that starts during the dump waits on that lock, and application queries queue behind the waiting migration.
 - It disables its own timeouts.
 - Its output can contain foreign-data-wrapper passwords and webhook tokens inside trigger definitions, so the final scan (SKILL.md Step 6) is mandatory.
 - Never add `--statistics` or `--statistics-only`. These contain real values.
 
 ## No Python
 
-If `python3` isn't available, scan with grep. The command prints only file:line, never the match, so a secret doesn't land in your context. Open each listed line and fix it:
+If `python3` isn't available, scan with grep. The command prints only file:line, never the matched text, so secrets don't enter your context. Open each listed line and fix it:
 
 ```sh
 grep -rnE '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}|eyJ[A-Za-z0-9_-]{8,}|[Bb]earer [A-Za-z0-9._~+/=-]{8,}|(sk|rk|pk)_(live|test)_[A-Za-z0-9]{8,}|AKIA[A-Z0-9]{12,}|gh[pousr]_[A-Za-z0-9]{20,}|xox[abposr]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY|://[^ :/@]+:[^ @/]+@|[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd] *[:=]' <bundle> | cut -d: -f1-2
@@ -122,4 +122,4 @@ grep -rnE '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}|eyJ[A
 
 Fix each hit by editing the file to replace the value with `<redacted>`. Then rerun until the command prints nothing.
 
-For literal values in queries without `normalize_sql.py`, replace each `'...'` string and each bare number in WHERE, VALUES and SET clauses by hand with `$1`, `$2`.
+To strip literal values from queries without `normalize_sql.py`, replace every `'...'` string literal and every bare number in WHERE, VALUES and SET clauses by hand with `$1`, `$2`.

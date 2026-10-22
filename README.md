@@ -10,7 +10,7 @@ Your coding agent writes down the shape of your app's database workload: the sch
 - It never reads table rows or `.env` files, never writes to your database, and never sends anything. As in any agent session, your model provider sees what the agent reads.
 - It writes one folder outside your repo, `~/pgrust-workload/<repo>-<date>/`. You review the folder and send it yourself.
 
-The top of [`SKILL.md`](skills/pgrust-workload/SKILL.md) takes a minute to read: what the skill does, what it never does, and what leaves your machine. Read it before you install.
+Read the top of [`SKILL.md`](skills/pgrust-workload/SKILL.md) before you install (it takes a minute): what the skill does, what it never does, and what leaves your machine.
 
 ## Install
 
@@ -20,7 +20,7 @@ Install it at user level, so nothing is added to your app's repo. It works with 
 
 > Install the agent skill at https://github.com/pgrust/skills globally, not in this repo
 
-Your agent should ask before it downloads anything and before it writes to its skills folder.
+Your agent should ask before downloading anything or writing to its skills folder.
 
 **Or run one command** (needs Node.js):
 
@@ -28,7 +28,7 @@ Your agent should ask before it downloads anything and before it writes to its s
 npx skills add pgrust/skills -g
 ```
 
-This uses Vercel's open-source [`skills`](https://github.com/vercel-labs/skills) installer. It puts the skill in `~/.agents/skills/pgrust-workload/` for Codex and Cursor, and links it from `~/.claude/skills/` for Claude Code. Update later with `npx skills update -g`.
+This uses Vercel's open-source [`skills`](https://github.com/vercel-labs/skills) installer. It puts the skill in `~/.agents/skills/pgrust-workload/` for Codex and Cursor, and links it from `~/.claude/skills/` for Claude Code. Update with `npx skills update -g`.
 
 **Or copy it by hand:**
 

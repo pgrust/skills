@@ -1,23 +1,23 @@
 # Level 2: dashboard exports, by host
 
-Every CLI command in this file is for the **user** to run in their own terminal. You never run them yourself, because your only database command is `collect.sql` (SKILL.md, hard rule 2). Read the files they produce.
+Every CLI command in this file is for the **user** to run in their own terminal. Never run them yourself: your only allowed database commands are `collect.sql` and `collect_clickhouse.sql` (SKILL.md, hard rule 2). Read the files they produce.
 
-Give the user only the section for their host. Ask for a downloaded file path where an export exists. A screenshot works where it doesn't: save it under `<bundle>/dashboard/` (the bundle folder outside the repo; see SKILL.md Step 0) and transcribe the query text and numbers into `queries.sql`.
+Give the user only the section for their host. If the host supports file exports, ask for the downloaded file path. Otherwise, ask for a screenshot, save it under `<bundle>/dashboard/` (the bundle folder outside the repo; see SKILL.md Step 0), and transcribe the query text and numbers into `queries.sql`.
 
 Status labels:
 
 - **VERIFIED** means checked against the vendor's official docs, or the open-source console code, on 2026-10-15.
 - **UNVERIFIED** means not confirmed. Tell the user "it may be named slightly differently" for those parts.
 
-Consoles move, so if a path doesn't match what they see, ask them to describe the screen rather than guessing.
+Vendor consoles change. If a menu path doesn't match what the user sees, ask them to describe the screen instead of guessing.
 
 ## Supabase
 
 **Top queries** (VERIFIED from Supabase Studio source, 2026-10-14):
 
-1. Open the project in the dashboard, then **Observability** in the left sidebar, then **Query Performance**. On projects with the newer monitoring extension the same menu item is called **Query Insights**.
+1. In the project dashboard, open **Observability** in the left sidebar, then **Query Performance** (called **Query Insights** on projects with the newer monitoring extension).
 2. Sort by **Time consumed** (total time). The **Roles** filter defaults to all roles; keep it that way.
-3. Scroll the table to the bottom once. The export includes only rows already loaded, and the page loads 20 at a time.
+3. Scroll to the bottom of the table once. The page loads 20 rows at a time, and the CSV export includes only loaded rows.
 4. Click the **Download results** button (top right, next to "Reset report"), then **Download CSV**. The file is named like `Supabase Query Performance Statements (<project-ref>).csv`.
 5. Give the agent the file path.
 
@@ -65,7 +65,7 @@ VERIFIED from PlanetScale docs:
 
 Orange icons mark full table scans and cross-shard queries. Mention them in queries.sql.
 
-There is no CSV export, so a screenshot plus copied query text is the format. The queries are MySQL dialect: keep them as-is, with `?` placeholders.
+There is no CSV export, so collect a screenshot and copied query text. Keep the queries in MySQL dialect, with `?` placeholders.
 
 ## Neon
 
@@ -98,7 +98,7 @@ VERIFIED, AWS docs. Performance Insights reached end of life on 2026-07-31, and 
 
 It ranks by DB load (average active sessions), not by total time. The text is normalized ("digest") and may be cut off at 4,096 characters.
 
-There is no console CSV export. Take a screenshot, plus the full text of the top 10 statements; clicking a statement shows its text.
+The console has no CSV export. Take a screenshot of the table, then click each of the top 10 statements to copy its text.
 
 **CLI alternative**, for users comfortable with the AWS CLI on their own credentials:
 

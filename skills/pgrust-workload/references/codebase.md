@@ -17,10 +17,10 @@ Work from files only. Don't run any command that connects to a database: `prisma
 | SQLAlchemy / Alembic | `alembic/versions/`, `DeclarativeBase`, `Mapped[...]` | Alembic versions in order, then models | |
 | Ecto (Elixir) | `priv/repo/migrations/` | migrations | |
 | GORM / sqlc / goose / golang-migrate (Go) | `*.sql` in `migrations/` or `db/`, `sqlc.yaml` | SQL migrations; sqlc `schema:` files | sqlc `queries:` files are exact SQL. |
-| Flyway / Liquibase (JVM) | `db/migration/V*__*.sql`, `changelog*.xml` | migration SQL | Hibernate entities otherwise. |
+| Flyway / Liquibase (JVM) | `db/migration/V*__*.sql`, `changelog*.xml` | migration SQL | Fall back to Hibernate entities if migrations are absent. |
 | Raw SQL | `schema.sql`, `*.sql` | those files | |
 
-Write schema.sql in a form that applies in order to an empty database. When migrations alter tables, apply the alters mentally and write the final state, or concatenate the migrations in order. State which you did in SUMMARY.md.
+Write schema.sql so it applies in order to an empty database. When migrations alter tables, either fold the alters into the final table definitions or concatenate the migrations in order, and state which you did in SUMMARY.md.
 
 **Drop from schema.sql:**
 
@@ -41,7 +41,7 @@ Write schema.sql in a form that applies in order to an empty database. When migr
 
 Replace interpolated values with `$1`, `$2` in order.
 
-**ORM calls** need translating. Write what the ORM generates, not idealised SQL:
+Translate **ORM calls** into the SQL the ORM actually emits, not idealised SQL:
 
 | ORM | What it generates |
 |---|---|
@@ -60,7 +60,7 @@ Mark every translated query `confidence: translated from <ORM> (approximate)`.
 3. Search: `ILIKE '%...%'`, full-text, trigram, typeahead.
 4. Background jobs and crons, using the schedule in `vercel.json`, `crontab`, `sidekiq.yml`, `celery beat`, GitHub Actions or `fly.toml` as frequency evidence.
 5. Writes on hot tables: event or audit inserts on every request, counters, upserts.
-6. Anything with a comment saying it's slow, a TODO about performance, or a cache wrapped around it.
+6. Queries with a slow-query comment, a performance TODO, or a caching wrapper.
 7. Auth or tenant lookups run on every request, such as session, API-key or org membership checks.
 
 For each query, give your evidence for frequency ("called from middleware on every request", "hourly cron", "on page load"). If you have none, say "unknown".
